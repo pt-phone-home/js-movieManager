@@ -31,27 +31,72 @@ const movies = [];
 
 // Functions
 
-const addMovieHander = () => {
-    const title = document.getElementById("title").value;
-    const extraName = document.getElementById("extra-name").value;
-    const extraValue = document.getElementById("extra-value").value;
+const renderMovies = (filter = "") => {
+  const movieList = document.getElementById("movie-list");
 
-    if (title.trim() === "" || extraName.trim() === "" || extraValue === "") {
-        return;
+  if (movies.length === 0) {
+    movieList.classList.remove("visible");
+    return;
+  } else {
+    movieList.classList.add("visible");
+  }
+
+  movieList.innerHTML = "";
+
+  const filteredMovies = !filter
+    ? movies
+    : movies.filter(movie => movie.info.title.includes(filter));
+
+  filteredMovies.forEach(movie => {
+    const movieEl = document.createElement("li");
+    const { info, ...otherProps } = movie;
+    console.log(otherProps);
+    // const { title: movieTitle } = info;
+    let { getFormattedTitle } = movie;
+    // getFormattedTitle = getFormattedTitle.bind(movie);
+    let text = getFormattedTitle.call(movie);
+    +" - ";
+    for (const key in info) {
+      if (key !== "title") {
+        text += ` ${key}: ${info[key]}`;
+      }
     }
-
-    const newMovie = {
-        info: {
-            title: title,
-            [extraName]: extraValue
-        },
-        id: Math.random()
-    };
-
-    movies.push(newMovie);
-    console.log(movies);
+    movieEl.textContent = text;
+    movieList.append(movieEl);
+  });
 };
 
+const addMovieHander = () => {
+  const title = document.getElementById("title").value;
+  const extraName = document.getElementById("extra-name").value;
+  const extraValue = document.getElementById("extra-value").value;
+
+  if (title.trim() === "" || extraName.trim() === "" || extraValue === "") {
+    return;
+  }
+
+  const newMovie = {
+    info: {
+      title: title,
+      [extraName]: extraValue,
+    },
+    id: Math.random(),
+    getFormattedTitle() {
+      console.log(this);
+      return this.info.title.toUpperCase();
+    },
+  };
+
+  movies.push(newMovie);
+  console.log(movies);
+  renderMovies();
+};
+
+const searchMovieHandler = () => {
+  const filterTerm = document.getElementById("filter-title").value;
+  renderMovies(filterTerm);
+};
 // EVENTS
 
 addMovieBtn.addEventListener("click", addMovieHander);
+searchBtn.addEventListener("click", searchMovieHandler);
